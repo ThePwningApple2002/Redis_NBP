@@ -1,0 +1,8 @@
+# schema.yaml
+redis_url: "redis://localhost:6379"
+index_name: "langchain-index"
+website_url: ""
+text_splitter:
+  chunk_size: 2000
+  chunk_overlap: 200
+num_results: 3
