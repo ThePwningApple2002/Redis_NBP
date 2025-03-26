@@ -1,0 +1,41 @@
+
+services:
+  # Your Python Application Service
+  app:
+    build: . # Tells Compose to build the image from the Dockerfile in the current directory
+    container_name: my_python_app # Optional: Give the container a specific name
+    environment:
+      # Pass environment variables to your Python app
+      # Your app should use these to connect to Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # Add any other environment variables your app needs
+      # PYTHONUNBUFFERED: 1 # Often useful to see print statements immediately
+    depends_on:
+      - redis # Ensures Redis starts before your app attempts to connect
+    networks:
+      - app-network # Connect this service to the custom network
+    # If your Python app is a web server (e.g., Flask, FastAPI), uncomment and adjust the ports:
+    # ports:
+    #   - "5000:5000" # Map host port 5000 to container port 5000 (adjust if your app uses a different port)
+
+  # Redis Stack Service
+  redis:
+    image: redis/redis-stack-server:latest # Use the Redis Stack image you have locally
+    container_name: my_redis_stack # Optional: Give the container a specific name
+    ports:
+      # Map standard Redis port and RedisInsight port (optional) to the host
+      - "6379:6379"
+    volumes:
+      - redis_data:/data 
+    networks:
+      - app-network # Connect this service to the custom network
+
+# Define the network for services to communicate
+networks:
+  app-network:
+    driver: bridge # Default network driver is usually sufficient
+
+# Define the named volume for Redis data persistence
+volumes:
+  redis_data:

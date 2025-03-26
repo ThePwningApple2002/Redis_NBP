@@ -1,7 +1,7 @@
 # schema.yaml
-redis_url: "redis://localhost:6379"
+redis_url: "redis://redis:6379"
 index_name: "langchain-index"
-website_url: ""
+website_url: "https://www.thespruceeats.com/serbian-custard-slice-recipe-krem-pita-1135860"
 text_splitter:
   chunk_size: 2000
   chunk_overlap: 200
