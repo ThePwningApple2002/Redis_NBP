@@ -1,8 +1,8 @@
 
 services:
   app:
-    build: . 
-    container_name: my_python_app 
+    build: ./app
+    container_name: my_python_app
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
