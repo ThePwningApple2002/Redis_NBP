@@ -24,7 +24,7 @@ async def main():
     chunk_overlap = text_splitter_config.get("chunk_overlap", 50)
 
     # --- Force index creation ---
-    fajlovi_ucitaj = "da"
+    fajlovi_ucitaj = input("Da li da ucitava fajlove: ")
     print(f"Index creation flag ('fajlovi_ucitaj'): {fajlovi_ucitaj}")
 
     # --- Check website_url ---
@@ -91,7 +91,7 @@ async def main():
          return
 
     print("Proceeding to search and chat...")
-    input_query = "Kako napraviti krempitu"#input("Input your question: ")
+    input_query = input("Input your question: ")
     preprompts = (
         "You are given more context via a mechanism I made. When asked a question "
         "use that context to answer the question"
