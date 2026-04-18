@@ -28,6 +28,8 @@ async def retrieve(state: GraphState) -> dict:
 
     retriever = get_retriever()
     docs = await retriever.ainvoke(last_human_msg.content)
+    # Filter out bootstrap/placeholder docs
+    docs = [d for d in docs if d.metadata.get("title") != "__bootstrap__"]
     context = "\n\n".join(doc.page_content for doc in docs)
     return {"retrieved_context": context}
 
@@ -36,10 +38,10 @@ async def generate(state: GraphState) -> dict:
     context = state.get("retrieved_context", "")
 
     system_prompt = (
-        "You are a helpful food recipe assistant. "
-        "Use the following recipe context to answer the user's question. "
-        "If the context doesn't contain relevant information, answer from your general knowledge.\n\n"
-        f"Recipe context:\n{context}"
+        "Ti si koristan asistent za kulinarske recepte. "
+        "Koristi sledeci kontekst recepta da odgovoris na korisnikovo pitanje. "
+        "Ako kontekst nema relevantne informacije, odgovori iz svog opsteg znanja.\n\n"
+        f"Kontekst recepta:\n{context}"
     )
 
     # Strip any SystemMessages that accumulated from previous turns to avoid duplication

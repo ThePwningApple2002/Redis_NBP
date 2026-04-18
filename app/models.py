@@ -8,7 +8,14 @@ class Message(BaseModel):
 
 
 class IngestRequest(BaseModel):
-    html: str
+    url: str | None = None
+    title: str | None = None
+    description: str | None = None
+    siteName: str | None = None
+    htmlFragment: str | None = None
+    html: str | None = None  # fallback from old extension version
+    sourceUrl: str | None = None
+    timestamp: str | None = None
 
 
 class IngestResponse(BaseModel):
