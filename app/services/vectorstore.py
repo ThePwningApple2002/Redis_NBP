@@ -16,6 +16,11 @@ def get_embeddings() -> OpenAIEmbeddings:
 
 @lru_cache(maxsize=1)
 def get_vector_store() -> RedisVectorStore:
+    """Return a Redis vector store, creating the index if missing.
+
+    We first try to connect to an existing index. If it doesn't exist, we create
+    it by inserting a tiny bootstrap document.
+    """
     config = RedisConfig(
         index_name="recipe_index",
         redis_url=settings.redis_url,
@@ -25,7 +30,18 @@ def get_vector_store() -> RedisVectorStore:
             {"name": "tags", "type": "text"},
         ],
     )
-    return RedisVectorStore(embeddings=get_embeddings(), config=config)
+    embeddings = get_embeddings()
+
+    try:
+        return RedisVectorStore.from_existing_index(embeddings=embeddings, config=config)
+    except Exception:
+        # Index likely missing: create it with a bootstrap doc
+        return RedisVectorStore.from_texts(
+            texts=["__bootstrap__"],
+            embedding=embeddings,
+            metadatas=[{"title": "__bootstrap__", "source_url": "", "tags": "__bootstrap__"}],
+            config=config,
+        )
 
 
 def get_retriever(k: int = 4):

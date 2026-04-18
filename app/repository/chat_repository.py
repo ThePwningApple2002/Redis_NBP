@@ -10,6 +10,17 @@ class ChatRepository:
     def _key(self, user_id: str, conv_id: str) -> str:
         return f"chat:{user_id}:{conv_id}"
 
+    @staticmethod
+    def _derive_title(text: str) -> str:
+        """Use the first sentence (roughly) or fallback to first 80 chars."""
+        if not text:
+            return "Untitled conversation"
+        first_sentence = text.split(". ", 1)[0].split("? ", 1)[0].split("! ", 1)[0]
+        candidate = first_sentence.strip()
+        if not candidate:
+            candidate = text.strip()
+        return (candidate[:80]).strip() or "Untitled conversation"
+
     async def get_conversation(self, user_id: str, conv_id: str) -> list[dict]:
         key = self._key(user_id, conv_id)
         try:
@@ -29,15 +40,26 @@ class ChatRepository:
 
         exists = await self.redis.exists(key)
         if not exists:
+            # Derive a default title from the first user message if present
+            user_msg = next((m for m in new_msgs if m.get("role") == "user"), None)
+            title = self._derive_title(user_msg.get("content", "") if user_msg else "")
             doc = {
                 "messages": new_msgs,
                 "created_at": now,
                 "updated_at": now,
+                "title": title,
             }
             await self.redis.json().set(key, "$", doc)
         else:
             await self.redis.json().arrappend(key, "$.messages", *new_msgs)
             await self.redis.json().set(key, "$.updated_at", now)
+            # If title missing, try to set from first user message in this batch
+            title = await self.redis.json().get(key, "$.title")
+            if not title or title == [None]:
+                user_msg = next((m for m in new_msgs if m.get("role") == "user"), None)
+                if user_msg:
+                    derived = self._derive_title(user_msg.get("content", ""))
+                    await self.redis.json().set(key, "$.title", derived)
 
     async def list_conversations(self, user_id: str) -> list[dict]:
         pattern = f"chat:{user_id}:*"
@@ -72,6 +94,28 @@ class ChatRepository:
                 "created_at": doc.get("created_at", ""),
                 "updated_at": doc.get("updated_at", ""),
                 "message_count": len(doc.get("messages", [])),
+                "title": doc.get("title") or "Untitled conversation",
             }
         except Exception:
             return None
+
+    async def update_title(self, user_id: str, conv_id: str, title: str) -> bool:
+        key = self._key(user_id, conv_id)
+        clean = title.strip() or "Untitled conversation"
+        exists = await self.redis.exists(key)
+        now = datetime.now(timezone.utc).isoformat()
+
+        if not exists:
+            # Create a minimal conversation doc so the title can be persisted
+            doc = {
+                "messages": [],
+                "created_at": now,
+                "updated_at": now,
+                "title": clean,
+            }
+            await self.redis.json().set(key, "$", doc)
+            return True
+
+        await self.redis.json().set(key, "$.title", clean)
+        await self.redis.json().set(key, "$.updated_at", now)
+        return True
