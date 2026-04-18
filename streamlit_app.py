@@ -13,7 +13,7 @@ from websockets.sync.client import ClientConnection, connect
 
 @dataclass
 class ChatMessage:
-    role: str  # "user" or "assistant"
+    role: str
     content: str
 
 
@@ -41,7 +41,7 @@ def build_ws_url(base_http_url: str, user_id: str, conversation_id: str) -> str:
     """Convert http(s) URL to ws(s) URL and append path."""
     parsed = urllib.parse.urlparse(base_http_url)
     scheme = "wss" if parsed.scheme == "https" else "ws"
-    netloc = parsed.netloc or parsed.path  # allow bare host without scheme
+    netloc = parsed.netloc or parsed.path
     return f"{scheme}://{netloc}/ws/chat/{user_id}/{conversation_id}"
 
 
@@ -50,7 +50,6 @@ def send_and_stream(ws_url: str, message: str, timeout: float = 30.0) -> str:
     response_tokens: List[str] = []
     ws: Optional[ClientConnection] = st.session_state.get("ws")
 
-    # Create or reuse persistent connection
     if ws is None or ws.state.name != "OPEN":
         ws = connect(ws_url, open_timeout=timeout, close_timeout=timeout)
         st.session_state.ws = ws
@@ -153,14 +152,12 @@ def render_sidebar():
             st.session_state.last_loaded_conv = st.session_state.conversation_id
             st.rerun()
 
-        # Fetch conversations if a user is set
         st.session_state.conversations = fetch_conversations(st.session_state.backend, st.session_state.user_id)
 
         if st.session_state.conversations:
             st.markdown("### Your chats")
             for meta in st.session_state.conversations:
                 active = meta.conversation_id == st.session_state.conversation_id
-                # Add a visual indicator for the active chat
                 label = f"{'🔹 ' if active else ''}{meta.title}"
                 
                 if st.button(label, key=f"btn_{meta.conversation_id}", use_container_width=True):
@@ -176,7 +173,6 @@ def render_sidebar():
                         st.session_state.last_loaded_conv = meta.conversation_id
                         st.rerun()
 
-            # Rename section
             st.divider()
             current_meta = next((c for c in st.session_state.conversations if c.conversation_id == st.session_state.conversation_id), None)
             if current_meta:
@@ -200,7 +196,6 @@ def render_sidebar():
             else:
                 st.warning("Enter a User ID above to see your chats.")
 
-        # Show connection status at the very bottom
         st.markdown("---")
         ws = st.session_state.ws
         if ws and ws.state.name == "OPEN":
@@ -219,7 +214,6 @@ def main():
     st.set_page_config(page_title="Recipe Chat", page_icon="🥘", layout="wide")
     init_state()
 
-    # Auto-load history when switching conversations (fallback catch)
     if st.session_state.conversation_id != st.session_state.last_loaded_conv:
         st.session_state.messages = fetch_history(
             st.session_state.backend,
@@ -236,7 +230,6 @@ def main():
 
     render_history()
 
-    # Chat input at bottom
     prompt = st.chat_input("Ask for a recipe or cooking help...")
     if prompt:
         if not st.session_state.user_id:
@@ -262,7 +255,6 @@ def main():
                 
                 st.session_state.messages.append(ChatMessage("assistant", full or "(no response)"))
                 st.session_state.conversations = fetch_conversations(st.session_state.backend, st.session_state.user_id)
-                # Force a rerun to sync the sidebar conversation list if this was the first message
                 st.rerun()
             except Exception as e:
                 placeholder.error(f"WebSocket error: {e}")
