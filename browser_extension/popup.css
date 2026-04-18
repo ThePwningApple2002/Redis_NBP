@@ -1,0 +1,159 @@
+:root {
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    --surface: rgba(255, 255, 255, 0.04);
+    --border: rgba(255, 255, 255, 0.08);
+    --primary: #818cf8;
+    --primary-hover: #6366f1;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+  }
+  
+  body {
+    width: 320px;
+    margin: 0;
+    background: var(--bg-gradient);
+    color: var(--text-main);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    user-select: none;
+  }
+  
+  .container {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(129, 140, 248, 0.15), rgba(99, 102, 241, 0.05));
+    border: 1px solid rgba(129, 140, 248, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .chef-icon {
+    width: 24px;
+    height: 24px;
+    background-color: currentColor;
+    -webkit-mask: url('chef-hat.svg') no-repeat center;
+    -webkit-mask-size: contain;
+    mask: url('chef-hat.svg') no-repeat center;
+    mask-size: contain;
+  }
+  
+  .title-area h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  
+  .title-area p {
+    margin: 4px 0 0 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  
+  .action-btn {
+    position: relative;
+    width: 100%;
+    padding: 14px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    overflow: hidden;
+  }
+  
+  .action-btn:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+  }
+  
+  .action-btn:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  .action-btn:disabled {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  
+  /* Icon Transitions */
+  .btn-icon {
+    width: 18px;
+    height: 18px;
+    transition: all 0.3s ease;
+  }
+  
+  .spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  
+  .action-btn:disabled .spinner {
+    border-top-color: var(--primary); /* subtle spinner color when disabled */
+  }
+  
+  @keyframes spin { 
+    to { transform: rotate(360deg); } 
+  }
+  
+  /* Status text below button */
+  .status-container {
+    height: 20px;
+    text-align: center;
+  }
+  
+  .status-text {
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+  }
+  
+  .status-text.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .text-success { color: #34d399; }
+  .text-error { color: #f87171; }
+  
+  /* Utility to swap icons */
+  .hidden { display: none !important; }
