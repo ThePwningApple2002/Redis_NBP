@@ -159,6 +159,13 @@ def _to_lc_messages(history: list[dict]) -> list:
     return messages
 
 
+def _history_before_last_user_turn(history: list[dict]) -> list[dict]:
+    for idx in range(len(history) - 1, -1, -1):
+        if history[idx].get("role") == "user":
+            return history[:idx]
+    raise ValueError("No previous user message found to edit.")
+
+
 @router.websocket("/ws/chat/{user_id}/{conversation_id}")
 async def websocket_chat(
     websocket: WebSocket, user_id: str, conversation_id: str
@@ -170,7 +177,14 @@ async def websocket_chat(
     try:
         while True:
             data = await websocket.receive_json()
+            action = data.get("action", "send")
             user_message = data.get("message", "").strip()
+
+            if action not in {"send", "edit_last"}:
+                await websocket.send_json(
+                    {"type": "error", "content": "Unsupported action."}
+                )
+                continue
 
             if not user_message:
                 await websocket.send_json(
@@ -178,8 +192,19 @@ async def websocket_chat(
                 )
                 continue
 
-            # Hydrate: load conversation history from Redis
             history = await chat_repo.get_conversation(user_id, conversation_id)
+
+            if action == "edit_last":
+                try:
+                    history = _history_before_last_user_turn(history)
+                except ValueError as err:
+                    await websocket.send_json(
+                        {"type": "error", "content": str(err)}
+                    )
+                    continue
+
+                await chat_repo.replace_messages(user_id, conversation_id, history)
+
             lc_history = _to_lc_messages(history)
 
             initial_state = {
@@ -187,7 +212,6 @@ async def websocket_chat(
                 "retrieved_context": "",
             }
 
-            # Execute: stream graph events, forwarding tokens to the client
             full_response = ""
             async for event in graph.astream_events(initial_state, version="v2"):
                 if event["event"] == "on_chat_model_stream":
@@ -198,7 +222,6 @@ async def websocket_chat(
                             {"type": "token", "content": token}
                         )
 
-            # Persist: append both messages atomically to Redis
             await chat_repo.append_messages(
                 user_id,
                 conversation_id,
@@ -208,7 +231,6 @@ async def websocket_chat(
                 ],
             )
 
-            # Signal completion to the client
             await websocket.send_json({"type": "end", "content": full_response})
 
     except WebSocketDisconnect:
