@@ -25,7 +25,6 @@ class ChatRepository:
         key = self._key(user_id, conv_id)
         try:
             result = await self.redis.json().get(key, "$.messages")
-            # JSONPath returns a list wrapping the matched value; None if key missing
             if result is None:
                 return []
             return result[0] if result else []
@@ -40,7 +39,6 @@ class ChatRepository:
 
         exists = await self.redis.exists(key)
         if not exists:
-            # Derive a default title from the first user message if present
             user_msg = next((m for m in new_msgs if m.get("role") == "user"), None)
             title = self._derive_title(user_msg.get("content", "") if user_msg else "")
             doc = {
@@ -60,6 +58,28 @@ class ChatRepository:
                 if user_msg:
                     derived = self._derive_title(user_msg.get("content", ""))
                     await self.redis.json().set(key, "$.title", derived)
+
+    async def replace_messages(
+        self, user_id: str, conv_id: str, messages: list[dict]
+    ) -> None:
+        key = self._key(user_id, conv_id)
+        now = datetime.now(timezone.utc).isoformat()
+        exists = await self.redis.exists(key)
+
+        if not exists:
+            user_msg = next((m for m in messages if m.get("role") == "user"), None)
+            title = self._derive_title(user_msg.get("content", "") if user_msg else "")
+            doc = {
+                "messages": messages,
+                "created_at": now,
+                "updated_at": now,
+                "title": title,
+            }
+            await self.redis.json().set(key, "$", doc)
+            return
+
+        await self.redis.json().set(key, "$.messages", messages)
+        await self.redis.json().set(key, "$.updated_at", now)
 
     async def list_conversations(self, user_id: str) -> list[dict]:
         pattern = f"chat:{user_id}:*"

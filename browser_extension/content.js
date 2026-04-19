@@ -9,13 +9,11 @@
         "web.coolinarika.com": () => {
             console.log("Pokreće se Coolinarika skrejper...");
             
-            // Hvata tačno klase koje si naveo
             const ingredientsBlock = document.querySelector('.css-12a8hbn');
             const instructionsBlock = document.querySelector('.css-1odmerm');
             
             let finalHTML = "";
             
-            // Spajamo ih u jedan čist HTML fragment
             if (ingredientsBlock) {
                 finalHTML += ingredientsBlock.outerHTML;
             }
@@ -30,13 +28,11 @@
         "recepti.zena.blic.rs": () => {
             console.log("Pokreće se Blic Zena skrejper...");
             
-            // Hvata tačno tabelu sa sastojcima i div sa uputstvom
             const ingredientsBlock = document.querySelector('.ingredients');
             const instructionsBlock = document.querySelector('.instructions');
             
             let finalHTML = "";
             
-            // Spajamo ih u jedan čist HTML fragment
             if (ingredientsBlock) {
                 finalHTML += ingredientsBlock.outerHTML;
             }
@@ -45,7 +41,6 @@
             }
             
             return {
-                // Ako ne pronađe ni jedno ni drugo, šalje fallback poruku
                 htmlFragment: finalHTML !== "" ? finalHTML : "<p>Sadržaj recepta nije pronađen.</p>"
             };
         },
