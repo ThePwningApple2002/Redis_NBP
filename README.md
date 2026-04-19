@@ -1,5 +1,15 @@
 # Run Guide
 
+## 0) Create .env file (required)
+
+This project requires a `.env` file in the project root before running Docker Compose or Streamlit.
+
+Make sure these values are set in `.env`:
+- `OPENROUTER_API_KEY`
+- `OPENAI_API_KEY`
+- `REDIS_URL`
+- `LLM_MODEL`
+
 ## 1) Run backend services with Docker Compose
 
 From the project root:
