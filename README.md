@@ -59,9 +59,3 @@ What it does:
 ```js
 const WEBHOOK_URL = "http://127.0.0.1:8000/recipes/ingest";
 ```
-
-- Host permissions are defined in `browser_extension/manifest.json` for localhost/127.0.0.1.
-- If your API runs on another host/port, update both:
-	- `WEBHOOK_URL` in `background.js`
-	- `host_permissions` in `manifest.json`
-
