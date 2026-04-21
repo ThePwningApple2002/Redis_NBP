@@ -1,9 +1,7 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "sendToWebhook") {
       
-      // ⚠️ REPLACE THIS WITH YOUR ACTUAL WEBHOOK URL
       const WEBHOOK_URL = "http://127.0.0.1:8000/webhook";  
-      // Prepare the payload
       const payload = {
         sourceUrl: sender.tab ? sender.tab.url : "Unknown URL",
         title: sender.tab ? sender.tab.title : "Unknown Title",
@@ -11,7 +9,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         html: request.data
       };
   
-      // Send the data to the webhook
       fetch(WEBHOOK_URL, {
         method: "POST",
         headers: {
@@ -31,6 +28,5 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     }
     
-    // Required to keep the message channel open for async responses if needed
     return true; 
   });
