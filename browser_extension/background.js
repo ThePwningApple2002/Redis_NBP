@@ -1,9 +1,7 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "sendToWebhook") {
       
-      // ⚠️ REPLACE THIS WITH YOUR ACTUAL WEBHOOK URL
       const WEBHOOK_URL = "http://127.0.0.1:8000/recipes/ingest";  
-      // Prepare the payload by merging content.js data with metadata
       const payload = {
         url: request.data.url || (sender.tab ? sender.tab.url : "Unknown URL"),
         title: request.data.title || (sender.tab ? sender.tab.title : "Unknown Title"),
@@ -16,7 +14,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       
       console.log("Sending payload to backend:", payload);
   
-      // Send the data to the webhook
       fetch(WEBHOOK_URL, {
         method: "POST",
         headers: {
