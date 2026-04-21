@@ -35,7 +35,6 @@ def get_vector_store() -> RedisVectorStore:
     try:
         return RedisVectorStore.from_existing_index(embeddings=embeddings, config=config)
     except Exception:
-        # Index likely missing: create it with a bootstrap doc
         return RedisVectorStore.from_texts(
             texts=["__bootstrap__"],
             embedding=embeddings,
